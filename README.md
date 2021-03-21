@@ -2,7 +2,7 @@
 
 This is a PyTorch port of this repo: [ceshine/RRL_Matlab](https://github.com/ceshine/RRL_Matlab).
 
-Reference: [Stock Trading with Recurrent Reinforcement Learning (RRL) By Gabriel Molina]
+Reference: [Stock Trading with Recurrent Reinforcement Learning (RRL) By Gabriel Molina](http://cs229.stanford.edu/proj2006/Molina-StockTradingWithRecurrentReinforcementLearning.pdf)
 
 Example notebook: [example_DAX](notebooks/example_DAX.ipynb)
 
