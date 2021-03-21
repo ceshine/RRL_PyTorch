@@ -60,11 +60,11 @@ def gradient_accent(
     for i in range(max_iter):
         optimizer.zero_grad()
         Ft = update_Ft(normalized_asset_returns, model)
-        _, reward = reward_function(asset_returns, miu=1., delta=0, Ft=Ft, m=model.m)
+        returns, reward = reward_function(asset_returns, miu=1., delta=0, Ft=Ft, m=model.m)
         (-1 * reward).backward()
         optimizer.step()
         rewards.append(reward.detach().cpu())
-    return rewards
+    return rewards, returns, Ft
 
 
 def train(prices: torch.Tensor, m: int, t: int, delta: float = 0, max_iter: int = 100, lr: float = 0.1):
@@ -80,7 +80,7 @@ def train(prices: torch.Tensor, m: int, t: int, delta: float = 0, max_iter: int 
     )[:, 0]).float()
 
     model = RRLModel(m)
-    rewards = gradient_accent(
+    train_rewards, train_returns, train_Ft = gradient_accent(
         asset_returns, normalized_asset_returns, model, max_iter, lr
     )
 
@@ -93,12 +93,16 @@ def train(prices: torch.Tensor, m: int, t: int, delta: float = 0, max_iter: int 
         torch.log(1 + returns_ahead).cumsum(dim=-1)
     ) - 1) * 100
     return {
-        "reward_ahead": reward_ahead,
-        "Ft_ahead": Ft_ahead,
-        "asset_returns": asset_returns[m+t:],
-        "asset_percentage_returns": (torch.exp(
+        "valid_reward": reward_ahead,
+        "valid_Ft": Ft_ahead,
+        "valid_asset_returns": asset_returns[m+t:],
+        "valid_asset_percentage_returns": (torch.exp(
             torch.log(1 + asset_returns[m+t:]).cumsum(dim=-1)
         ) - 1) * 100,
-        "percentage_returns": percentage_returns,
-        "rewards_iter": rewards
+        "valid_percentage_returns": percentage_returns,
+        "rewards_iter": train_rewards,
+        "train_percentage_returns": (torch.exp(
+            torch.log(1 + train_returns).cumsum(dim=-1)
+        ) - 1) * 100,
+        "train_Ft": train_Ft
     }
